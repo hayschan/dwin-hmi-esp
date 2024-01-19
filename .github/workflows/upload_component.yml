@@ -15,6 +15,6 @@ jobs:
         uses: espressif/upload-components-ci-action@v1
         with:
           namespace: "hayschan"
-          name: "max6675"
+          name: "dwin-hmi-esp"
           version: ${{ github.ref_name }}
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
