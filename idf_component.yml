@@ -1,9 +1,9 @@
-description: MAX6675 thermocouple amplifier SPI driver
+description: ESP-IDF Library for DWIN DGUS T5L HMI Displays
 
-url: https://github.com/hayschan/max6675
-issues: https://github.com/hayschan/max6675/issues
-documentation: https://github.com/hayschan/max6675/tree/main/README.md
-repository: https://github.com/hayschan/max6675.git
+url: https://github.com/hayschan/dwin-hmi-esp
+issues: https://github.com/hayschan/dwin-hmi-esp/issues
+documentation: https://github.com/hayschan/dwin-hmi-esp/tree/main/README.md
+repository: https://github.com/hayschan/dwin-hmi-esp.git
 
 maintainers:
   - "Hays Chan <blog@haysc.tech>"
