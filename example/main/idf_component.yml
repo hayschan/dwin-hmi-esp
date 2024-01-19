@@ -1,4 +1,4 @@
 dependencies:
-  hayschan/max6675:
+  hayschan/dwin-hmi-esp:
     version: "*"
     override_path: '../../'
