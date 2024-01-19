@@ -1,0 +1,4 @@
+dependencies:
+  hayschan/max6675:
+    version: "*"
+    override_path: '../../'

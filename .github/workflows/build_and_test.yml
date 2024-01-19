@@ -1,0 +1,104 @@
+name: Build and Test Application
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # This line enables manual triggering
+
+env:
+  IDF_PATH: /opt/esp/idf
+  test_dirs: test_apps
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build Test App
+    strategy:
+      fail-fast: false
+      matrix:
+        # choose the version of ESP-IDF to use for the build
+        idf-branch:
+          - release-v5.0
+          - release-v5.1
+          # - latest
+        # choose the target to build for
+        target:
+          - esp32s3
+          # - esp32c3
+    runs-on: ubuntu-22.04
+    container:
+      image: espressif/idf:${{ matrix.idf-branch }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Python Dependencies
+        run: |
+          . $IDF_PATH/export.sh
+          python -m pip install idf-build-apps
+      - name: Build Test Application with ESP-IDF
+        run: |
+          . $IDF_PATH/export.sh
+          idf-build-apps build \
+            -p ${{ env.test_dirs }} \
+            --target ${{ matrix.target }} \
+            --recursive \
+            --build-dir build_${{ matrix.target }}_${{ matrix.idf-branch }}
+      - name: Upload files to artifacts for run-target job
+        uses: actions/upload-artifact@v3
+        with:
+          name: built_binaries_${{ matrix.target }}_${{ matrix.idf-branch }}
+          path: |
+            **/build**/bootloader/bootloader.bin
+            **/build**/partition_table/partition-table.bin
+            **/build**/*.bin
+            **/build**/*.elf
+            **/build**/flasher_args.json
+          if-no-files-found: error
+  # target-test:
+  #   name: Run Test App on Target (QEMU)
+  #   needs: build
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       # choose the version of ESP-IDF to use for the build
+  #       idf-branch:
+  #         # - release-v5.0
+  #         # - release-v5.1
+  #         - latest
+  #       # choose the target to build for
+  #       target:
+  #         - esp32
+  #         - esp32c3
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: hfudev/qemu:main
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/download-artifact@v2
+  #       with:
+  #         name: built_binaries_${{ matrix.target }}_${{ matrix.idf-branch }}
+  #     - name: Install Python packages
+  #       run: |
+  #         . $IDF_PATH/export.sh
+  #         pip install \
+  #           pytest-embedded-idf \
+  #           pytest-embedded-qemu
+  #     - name: Run Test App on target
+  #       run: |
+  #         . $IDF_PATH/export.sh
+  #         pytest ${{ env.test_dirs }} \
+  #           --target ${{ matrix.target }} \
+  #           --embedded-services idf,qemu \
+  #           --junit-xml test_${{ matrix.target }}_${{ matrix.idf-branch }}.xml \
+  #           --build-dir build_${{ matrix.target }}_${{ matrix.idf-branch }}
+  #     - uses: actions/upload-artifact@v2
+  #       if: always()
+  #       with:
+  #         name: test_${{ matrix.target }}_${{ matrix.idf-branch }}_junit
+  #         path: test_${{ matrix.target }}_${{ matrix.idf-branch }}.xml
