@@ -1,14 +1,74 @@
-# MAX6675 ESP Component
+# DWIN DGUS HMI ESP-IDF Library
 
-This is a versatile ESP component for interfacing with the MAX6675 thermocouple amplifier using Espressif's ESP8266 or ESP32 microcontrollers. The MAX6675 is a popular thermocouple-to-digital converter IC that provides accurate temperature measurements using K-type thermocouples.
+Official Arduino Library for DWIN DGUS T5L HMI Display.
 
-## Getting Started
+Supporting Features till date:
 
-Check out the `example` folder in the root for the use of this MAX6675 component.
+- `getHWVersion()`
+- `restartHMI()`
+- `setPage()`
+- `getPage()`
+- `setBrightness()`
+- `getBrightness()`
+- `setVP()`
+- `setText()`
+- `beepHMI()`
+- `listenEvents()`
 
-## Add component to your project
-Please use the component manager command add-dependency to add the button to your project's dependency, during the CMake step the component will be downloaded automatically.
+## Installation: Add component to your project
 
+Please use the component manager command add-dependency to add the `dwin-hmi-esp` to your project's dependency, during the CMake step the component will be downloaded automatically.
+
+```shell
+idf.py add-dependency "hayschan/dwin-hmi-esp"
 ```
-idf.py add-dependency "hayschan/max6675"
+
+## Usage
+
+### Include DWIN Library
+
+```cpp
+#include "DWIN.h"
+```
+
+### Initialization
+
+Construct and initialize the DWIN hmi object with:
+- [UART port number](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/uart.html#_CPPv411uart_port_t)
+- RX pin
+- TX pin
+- Baud rate
+
+```cpp
+// Create an instance of the DWIN class
+DWIN hmi(UART_NUM_1, RX_PIN, TX_PIN, DGUS_BAUD);
+```
+
+### Define callback Function
+
+```cpp
+// Event Occurs when response comes from HMI
+void onHMIEvent(std::string address, int lastByte, std::string message, std::string response)
+{  
+    ESP_LOGI("HMIEvent", "OnEvent : [ A : %s | D : %02X | M : %s | R : %s ]", address.c_str(), lastByte, message.c_str(), response.c_str());
+    if (address == "1002") {
+        // Take your custom action call
+    }
+}
+```
+
+### Setup
+
+```cpp
+hmi.echoEnabled(false);
+hmi.hmiCallBack(onHMIEvent);
+hmi.setPage(1);
+```
+
+### Endless loop
+
+Listen to HMI Events.
+
+```cpp
+hmi.listen();
 ```
